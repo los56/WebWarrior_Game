@@ -4,13 +4,16 @@ import { Goblin, GameUnit, Warrior } from './Units.js';
 import AttackButton from './resources/sprites/Buttons/Attack.png';
 import EscapeButton from './resources/sprites/Buttons/Empty.png';
 import { GameButton } from './UI.js';
+import { GameLogger } from './Utils.js';
 
 class GameManager {
     // Transfer
     sessionURL;
 
     // GameLogic
-    isPlayerTurn = false;
+    turnCount = 1;
+    isPlayerTurn = true;
+    isSelectMode = false;
     
     // GameObjects
     app;
@@ -20,8 +23,14 @@ class GameManager {
 
     buttons = [];
 
-    constructor(sessionURL) {
+    // Utils
+    logger;
+    options;
+
+    constructor(sessionURL, options) {
         this.sessionURL = sessionURL;
+        this.options = options;
+        this.init();
     }
 
     init() {
@@ -37,7 +46,38 @@ class GameManager {
             width: 500,
             height: 600
         });
-        document.body.appendChild(this.app.view);
+        document.getElementById('container').appendChild(this.app.view);
+
+        this.app.stage.hitArea = new PIXI.Rectangle(0, 0, 500, 600);
+        this.app.stage.eventMode = 'static';
+        this.app.stage.onrightdown = (e) => {
+            this.onClick(e);
+        };
+
+        console.log(this.options);
+
+        if(this.options) {
+            if(this.options.logging) {
+                this.logger = new GameLogger(this);
+            }
+            
+        }
+    }
+
+    onClick(e) {
+        if(!this.isSelectMode) {
+            return;
+        }
+        
+        for(let i of this.enemies) {
+            if(!i) {
+                continue;
+            }
+
+            i.unsetSelectMode();
+            console.log(i);
+        }
+        this.isSelectMode = false;
     }
 
     spawnWarrior() {
@@ -54,7 +94,6 @@ class GameManager {
          
         _e.draw();
         _e.setPosition(450, 300);
-        _e.container.scale.set(-1.0, 1.0);
         this.app.stage.addChild(_e.container);
     }
 
@@ -75,7 +114,7 @@ class GameManager {
     }
 
     drawButton() {
-        const atkbtn = new GameButton(AttackButton, 50, 550, () => {console.log('attack!')});
+        const atkbtn = new GameButton(AttackButton, 50, 550, () => {this.attackMode()});
         atkbtn.draw();
         atkbtn.setScale(1.5, 1.5);
         this.buttons.push(atkbtn);
@@ -88,6 +127,21 @@ class GameManager {
         for(let i of this.buttons) {
             this.app.stage.addChild(i.pixiContainer);
         }
+    }
+
+    attackMode() {
+        if(this.isSelectMode) {
+            return;
+        }
+
+        for(let i of this.enemies) {
+            if(!i) {
+                continue;
+            }
+
+            i.setSelectMode();
+        }
+        this.isSelectMode = true;
     }
 }
 

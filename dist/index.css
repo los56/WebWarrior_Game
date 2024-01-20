@@ -1,0 +1,17 @@
+#container {
+    display: flex;
+}
+
+ul {
+    display: inline-block;
+    border: 1px solid black;
+
+    width: 500px;
+    height: 600px;
+
+    padding: 10px;
+    margin: 0 10px;
+    overflow: auto;
+
+    list-style: none;
+}

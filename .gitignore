@@ -10,4 +10,6 @@ dist/*.png
 dist/*.jpg
 dist/*.txt
 
-
+# Editor caches
+.vscode
+.idea
